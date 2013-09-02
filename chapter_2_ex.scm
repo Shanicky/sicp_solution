@@ -122,3 +122,7 @@
   (lambda (f) (lambda (x) x)))
 (define (add-1 n)
   (lambda (f) (lambda (x) (f ((n f) x)))))
+(define (add a b)
+  (lambda (f) (lambda (x) ((a f) ((b f) x)))))
+(define (cn-to-n cn)
+  ((cn (lambda (i) (+ i 1)))0))
