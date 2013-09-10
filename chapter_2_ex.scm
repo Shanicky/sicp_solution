@@ -2,7 +2,7 @@
 ;; exercise 2.1
 (define (make-rat n d)
   (cond ((< d 0) (make-rat (- n) (- d)))	
-	(else (cons n d))))
+        (else (cons n d))))
 ;; exercise 2.2
 (define (make-segment start end)
   (cons start end))
@@ -18,7 +18,7 @@
   (cdr point))
 (define (midpoint-segment segment)
   (let ((midx (/ (+ (x-point (start-segment segment)) (x-point (end-segment segment))) 2))
-	(midy (/ (+ (y-point (start-segment segment)) (y-point (end-segment segment))) 2)))
+        (midy (/ (+ (y-point (start-segment segment)) (y-point (end-segment segment))) 2)))
     (make-point midx midy)))
 
 (define (print-point p)
@@ -55,9 +55,9 @@
   (* x x))
 (define (length segment)
   (let ((x1 (x-point (start-segment segment)))
-	(x2 (x-point (end-segment segment)))
-	(y1 (y-point (start-segment segment)))
-	(y2 (y-point (end-segment segment))))
+        (x2 (x-point (end-segment segment)))
+        (y1 (y-point (start-segment segment)))
+        (y2 (y-point (end-segment segment))))
     (sqrt (+ (sqr (- y2 y1)) (sqr (- x2 x1))))))
 ;; four point (1,2) (1,1) (2,1) (2,2) 
 (define lt (make-point 1 2))
@@ -87,15 +87,15 @@
 (define (pow x n)
   (define (pow-iter result i)
     (if (= i 0)
-	result
-	(pow-iter (* result x) (- i 1))))
+        result
+        (pow-iter (* result x) (- i 1))))
   (pow-iter 1 n))
 (define (powdc x n)
   (if (odd? n)
       (* x (powdc x (- n 1)))
       (if (= n 0)
-	  1
-	  (sqr (powdc x (/ n 2))))))
+          1
+          (sqr (powdc x (/ n 2))))))
 (define (pcons x y)
   (* (pow 2 x) (pow 3 y)))
 (define (pacr n)
@@ -104,8 +104,8 @@
       (+ 1 (pacr (/ n 2)))))
 (define (pcdr n)
   (cond ((even? n) (pcdr (/ n 2)))
-	((= n 1) 0)
-	(else (+ 1 (pcdr (/ n 3))))))
+        ((= n 1) 0)
+        (else (+ 1 (pcdr (/ n 3))))))
 ;;exercise 2.6
 (define one
   (lambda (f) (lambda (x) (f x))))
@@ -119,3 +119,129 @@
   (lambda (f) (lambda (x) ((a f) ((b f) x)))))
 (define (cn-to-n cn)
   ((cn (lambda (i) (+ i 1)))0))
+;;exercise 2.7
+(define (make-interval a b) (cons a b))
+(define (lower-bound interval) (min (car interval) (cdr interval)))
+(define (upper-bound interval) (max (car interval) (cdr interval)))
+(define (add-interval x y)
+  (make-interval (+ (lower-bound x) (lower-bound y))
+                 (+ (upper-bound x) (upper-bound y))))
+;;exercise 2.8
+(define (sub-interval a b)
+  (make-interval (- (lower-bound a) (upper-bound b))
+                 (- (upper-bound a) (lower-bound b))))
+;;exercise 2.9
+(define (interval-width interval)
+  (/ (- (upper-bound interval)
+        (lower-bound interval))
+     2))
+(define i (make-interval 2 5))
+(define j (make-interval 4 7))
+(define p (add-interval i j))
+(define q (sub-interval i j))
+;;(interval-width i)
+;;(interval-width j)
+;;(interval-width p)
+;;(interval-width q)
+;; while the width of i and j are both 1.5 
+;; the width of (add i j) and (sub i j) are both 3
+;; so the width of (add/sub i j) can be (+ (width i) (width j))
+;; but it doesn't support multiplication and division
+
+;;exercise 2.10
+(define (mul-interval x y)
+  (let ((p1 (* (lower-bound x) (lower-bound y)))
+        (p2 (* (lower-bound x) (upper-bound y)))
+        (p3 (* (upper-bound x) (lower-bound y)))
+        (p4 (* (upper-bound x) (upper-bound y))))
+    (make-interval (min p1 p2 p3 p4)
+                   (max p1 p2 p3 p4))))
+(define (div-interval x y)
+  (if (and (< (lower-bound y) 0)
+           (> (upper-bound y) 0))
+      (error "wrong y" y)
+      (mul-interval x
+                    (make-interval (/ 1.0 (upper-bound y))
+                                   (/ 1.0 (lower-bound y))))))
+;;exercise 2.11
+(define (mul-interval-2 x y)
+  (let ((xlo (lower-bound x))
+        (xhi (upper-bound x))
+        (ylo (lower-bound y))
+        (yhi (upper-bound y)))
+    (cond ((and (>= xlo 0)
+                (>= xhi 0)
+                (>= ylo 0)
+                (>= yhi 0))
+           ; [+, +] * [+, +]
+           (make-interval (* xlo ylo) (* xhi yhi)))
+          ((and (>= xlo 0)
+                (>= xhi 0)
+                (<= ylo 0)
+                (>= yhi 0))
+           ; [+, +] * [-, +]
+           (make-interval (* xhi ylo) (* xhi yhi)))
+          ((and (>= xlo 0)
+                (>= xhi 0)
+                (<= ylo 0)
+                (<= yhi 0))
+           ; [+, +] * [-, -]
+           (make-interval (* xhi ylo) (* xlo yhi)))
+          ((and (<= xlo 0)
+                (>= xhi 0)
+                (>= ylo 0)
+                (>= yhi 0))
+           ; [-, +] * [+, +]
+           (make-interval (* xlo yhi) (* xhi yhi)))
+          ((and (<= xlo 0)
+                (>= xhi 0)
+                (<= ylo 0)
+                (>= yhi 0))
+           ; [-, +] * [-, +]
+           (make-interval (min (* xhi ylo) (* xlo yhi))
+                          (max (* xlo ylo) (* xhi yhi))))
+          ((and (<= xlo 0)
+                (>= xhi 0)
+                (<= ylo 0)
+                (<= yhi 0))
+           ; [-, +] * [-, -]
+           (make-interval (* xhi ylo) (* xlo ylo)))
+          ((and (<= xlo 0)
+                (<= xhi 0)
+                (>= ylo 0)
+                (>= yhi 0))
+           ; [-, -] * [+, +]
+           (make-interval (* xlo yhi) (* xhi ylo)))
+          ((and (<= xlo 0)
+                (<= xhi 0)
+                (<= ylo 0)
+                (>= yhi 0))
+           ; [-, -] * [-, +]
+           (make-interval (* xlo yhi) (* xlo ylo)))
+          ((and (<= xlo 0)
+                (<= xhi 0)
+                (<= ylo 0)
+                (<= yhi 0))
+           ; [-, -] * [-, -]
+           (make-interval (* xhi yhi) (* xlo ylo))))))
+;;thanks to Bill the Lizard
+;;http://www.billthelizard.com/2010/12/sicp-27-211-extended-exercise-interval.html
+;;exercise 2.12
+(define (make-center-percent center percent)
+  (make-interval (- center (* percent center))
+                 (+ center (* percent center))))
+(define (center interval)
+  (/ (+ (lower-bound interval)
+        (upper-bound interval))
+     2))
+(define (percent interval)
+  (/ (/ (- (upper-bound interval)
+           (lower-bound interval)) 2)
+     (center interval)))
+;;exercise 2.13
+(define point-p (make-center-percent 10 0.5))
+(define point-q (make-center-percent 10 0.4))
+(define (percent-of-mul a b)
+  (let ((p1 (percent a))
+        (p2 (percent b)))
+    (/ (+ p1 p2) (+ 1 (* p1 p2)))))
