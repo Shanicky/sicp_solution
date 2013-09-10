@@ -1,11 +1,8 @@
+#lang racket
 ;; exercise 2.1
 (define (make-rat n d)
   (cond ((< d 0) (make-rat (- n) (- d)))	
 	(else (cons n d))))
-(make-rat -3 -5)
-(make-rat 3 -5)
-(make-rat -3 5)
-(make-rat 3 5)
 ;; exercise 2.2
 (define (make-segment start end)
   (cons start end))
@@ -32,7 +29,6 @@
   (display (y-point p))
   (display ")"))
 (define a (make-segment (make-point 1 1) (make-point 2 2)))
-(print-point (midpoint-segment a))
 ;;exercise 2.3
 (define (make-rect left bottom right top)
   (cons (cons left bottom) (cons right top)))
@@ -63,7 +59,6 @@
 	(y1 (y-point (start-segment segment)))
 	(y2 (y-point (end-segment segment))))
     (sqrt (+ (sqr (- y2 y1)) (sqr (- x2 x1))))))
-(length a)
 ;; four point (1,2) (1,1) (2,1) (2,2) 
 (define lt (make-point 1 2))
 (define lb (make-point 1 1))
@@ -77,12 +72,10 @@
 (define B (make-rect-p lt lb rb rt))
 (define (area rect)
   (* (length (left-rect-p rect)) (length (bottom-rect-p rect))))
-(area B)
 (define (double x)
   (* x 2))
 (define (perimeter rect)
   (double (+ (length (left-rect rect)) (length(bottom-rect rect)))))
-(perimeter A)
 ;;exercise 2.4
 (define (mycons x y)
   (lambda (m) (m x y)))
